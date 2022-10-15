@@ -52,6 +52,7 @@ class TransHelper {
     Temp genGtr(Temp, Temp);
     Temp genGeq(Temp, Temp);
     Temp genNeg(Temp);
+    Temp genNot(Temp);
     // Logical
     Temp genLAnd(Temp, Temp);
     Temp genLOr(Temp, Temp);

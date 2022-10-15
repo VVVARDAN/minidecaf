@@ -412,6 +412,21 @@ Tac *Tac::Neg(Temp dest, Temp src) {
     return t;
 }
 
+/*
+ Creates a Not tac.
+*/
+
+Tac *Tac::Not(Temp dest, Temp src) {
+    REQUIRE_I4(dest);
+    REQUIRE_I4(src);
+
+    Tac *t = allocateNewTac(Tac::NOT);
+    t->op0.var = dest;
+    t->op1.var = src;
+
+    return t;
+}
+
 /* Creates a LNot tac.
  *
  * NOTE:
@@ -709,6 +724,10 @@ void Tac::dump(std::ostream &os) {
         break;
 
     case LNOT:
+        os << "    " << op0.var << " <- (! " << op1.var << ")";
+        break;
+
+    case NOT:
         os << "    " << op0.var << " <- (! " << op1.var << ")";
         break;
 

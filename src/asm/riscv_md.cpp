@@ -224,8 +224,68 @@ void RiscvDesc::emitTac(Tac *t) {
         emitUnaryTac(RiscvInstr::NEG, t);
         break;
     
+    case Tac::NOT:
+        emitUnaryTac(RiscvInstr::NOT, t);
+        break;
+    
+    case Tac::BNOT:
+        emitUnaryTac(RiscvInstr::BNOT, t);
+        break;
+    
+    case Tac::LNOT:
+        emitUnaryTac(RiscvInstr::LNOT, t);
+        break;
+
     case Tac::ADD:
         emitBinaryTac(RiscvInstr::ADD, t);
+        break;
+
+    case Tac::MUL:
+        emitBinaryTac(RiscvInstr::MUL, t);
+        break;
+
+    case Tac::SUB:
+        emitBinaryTac(RiscvInstr::SUB, t);
+        break;
+
+    case Tac::DIV:
+        emitBinaryTac(RiscvInstr::DIV, t);
+        break;
+
+    case Tac::MOD:
+        emitBinaryTac(RiscvInstr::MOD, t);
+        break;
+
+    case Tac::LES:
+        emitBinaryTac(RiscvInstr::LES,t);
+        break;
+
+    case Tac::LEQ:
+        emitBinaryTac(RiscvInstr::LEQ,t);
+        break;
+
+    case Tac::GTR:
+        emitBinaryTac(RiscvInstr::GTR,t);
+        break;
+
+    case Tac::GEQ:
+        emitBinaryTac(RiscvInstr::GEQ,t);
+        break;
+
+    case Tac::LOR:
+        emitBinaryTac(RiscvInstr::OR,t);
+        break;
+
+    case Tac::LAND:
+        emitBinaryTac(RiscvInstr::AND,t);
+        break;
+
+    case Tac::EQU:
+        emitBinaryTac(RiscvInstr::EQU,t);
+        break;
+
+    case Tac::NEQ:
+        emitBinaryTac(RiscvInstr::NEQ,t);
         break;
 
     default:
@@ -458,6 +518,22 @@ void RiscvDesc::emitInstr(RiscvInstr *i) {
         oss << "neg" << i->r0->name << ", " << i->r1->name;
         break;
 
+    case RiscvInstr::NOT:
+        //oss << "xori" << i->r0->name << ", " << i->r1->name << ", " << -1;
+        oss << "and" << i->r0->name << ", " << i->r1->name << ", " << 1;
+        oss << std::endl;
+        oss << "add " << i->r0->name << ", " << i->r0->name << ", " << 1;
+        oss << std::endl;
+        oss << "and " << i->r0->name << ", " << i->r0->name << ", " << 1;
+        //oss << "NOT " << i->r0->name << ", " << i->r1->name;
+        break;
+
+    case RiscvInstr::BNOT:
+        //oss << "xori" << i->r0->name << ", " << i->r1->name << ", " << -1;
+        oss << "NOT" << i->r0->name << ", " << i->r1->name;
+        //oss << "li" << i->r0->name << ", " << 243;
+        break;
+    
     case RiscvInstr::MOVE:
         oss << "mv" << i->r0->name << ", " << i->r1->name;
         break;
@@ -478,10 +554,88 @@ void RiscvDesc::emitInstr(RiscvInstr *i) {
         oss << "add" << i->r0->name << ", " << i->r1->name << ", " << i->r2->name;
         break;
     
+    case RiscvInstr::MUL:
+        oss << "mul" << i->r0->name << ", " << i->r1->name << ", " << i->r2->name;
+        break;
+
+    case RiscvInstr::SUB:
+        oss << "sub" << i->r0->name << ", " << i->r1->name << ", " << i->r2->name;
+        break;
+
+    case RiscvInstr::DIV:
+        oss << "div" << i->r0->name << ", " << i->r1->name << ", " << i->r2->name;
+        break;
+
+    case RiscvInstr::MOD:
+        oss << "rem" << i->r0->name << ", " << i->r1->name << ", " << i->r2->name;
+        break;
+
+    case RiscvInstr::LES:
+        oss << "slt" << i->r0->name << ", " << i->r1->name << ", " << i->r2->name;
+        break;
+
+    case RiscvInstr::GTR:
+        oss << "slt" << i->r0->name << ", " << i->r2->name << ", " << i->r1->name;
+        oss << std::endl;
+        oss << "bne " << i->r0->name<< ", "<<i->r0->name<<", "<<0;
+        break;
+
+    case RiscvInstr::LEQ:
+        oss << "slt" << i->r0->name << ", " << i->r2->name << ", " << i->r1->name;
+        oss << std::endl;
+        oss << "seqz " << i->r0->name<< ", "<<i->r0->name;
+        break;
+
+    case RiscvInstr::GEQ:
+        oss << "slt" << i->r0->name << ", " << i->r1->name << ", " << i->r2->name;
+        oss << std::endl;
+        oss << "seqz " << i->r0->name<< ", "<<i->r0->name;
+        break;
+
+    case RiscvInstr::OR:
+        oss << "or" << i->r0->name << ", " << i->r1->name << ", " << i->r2->name;
+        oss << std::endl;
+        oss << "snez " << i->r0->name<< ", "<<i->r0->name;
+        break;
+
+    case RiscvInstr::AND:
+        oss << "and" << i->r0->name << ", " << i->r1->name << ", " << i->r2->name;
+        oss << std::endl;
+        oss << "snez " << i->r0->name<< ", "<<i->r0->name;
+        break;
+
+    case RiscvInstr::EQU:
+        oss << "slt" << i->r0->name << ", " << i->r1->name << ", " << i->r2->name;
+        oss << std::endl;
+        oss << "slt " << i->r1->name << ", " << i->r2->name << ", " << i->r1->name;
+        oss << std::endl;
+        oss << "seqz " << i->r0->name<< ", "<<i->r0->name;
+        oss << std::endl;
+        oss << "seqz " << i->r1->name<< ", "<<i->r1->name;
+        oss << std::endl;
+        oss << "and " << i->r0->name << ", " << i->r0->name << ", " << i->r1->name;
+        oss << std::endl;
+        oss << "snez " << i->r0->name<< ", "<<i->r0->name;
+        break;
+
+    case RiscvInstr::NEQ:
+        oss << "slt" << i->r0->name << ", " << i->r1->name << ", " << i->r2->name;
+        oss << std::endl;
+        oss << "slt " << i->r1->name << ", " << i->r2->name << ", " << i->r1->name;
+        oss << std::endl;
+        oss << "seqz " << i->r0->name<< ", "<<i->r0->name;
+        oss << std::endl;
+        oss << "seqz " << i->r1->name<< ", "<<i->r1->name;
+        oss << std::endl;
+        oss << "and " << i->r0->name << ", " << i->r0->name << ", " << i->r1->name;
+        oss << std::endl;
+        oss << "seqz " << i->r0->name<< ", "<<i->r0->name;
+        break;
+
     case RiscvInstr::BEQZ:
         oss << "beqz" << i->r0->name << ", " << i->l;
         break;
-
+    
     case RiscvInstr::J:
         oss << "j" << i->l;
         break;

@@ -44,6 +44,7 @@ void BasicBlock::computeDefAndLiveUse(void) {
         switch (t->op_code) {
         case Tac::ASSIGN:
         case Tac::NEG:
+        case Tac::NOT:
         case Tac::LNOT:
         case Tac::BNOT:
             updateLU(t->op1.var);
@@ -191,6 +192,7 @@ void BasicBlock::analyzeLiveness(void) {
         switch (t->next->op_code) {
         case Tac::ASSIGN:
         case Tac::NEG:
+        case Tac::NOT:
         case Tac::LNOT:
         case Tac::BNOT:
             if (NULL != t_next->op0.var)

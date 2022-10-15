@@ -82,6 +82,7 @@ struct Tac {
         GTR,
         GEQ,
         NEG,
+        NOT,
         LAND,
         LOR,
         LNOT,
@@ -135,6 +136,7 @@ struct Tac {
     static Tac *LOr(Temp dest, Temp op1, Temp op2);
     static Tac *Assign(Temp dest, Temp src);
     static Tac *Neg(Temp dest, Temp src);
+    static Tac *Not(Temp dest, Temp src);
     static Tac *LNot(Temp dest, Temp src);
     static Tac *BNot(Temp dest, Temp src);
     static Tac *LoadImm4(Temp dest, int value);

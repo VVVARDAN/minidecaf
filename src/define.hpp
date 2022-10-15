@@ -76,6 +76,8 @@ class IntConst;
 class IntType;
 class LeqExpr;
 class LesExpr;
+class GeqExpr;
+class GrtExpr;
 class Lvalue;
 class LvalueExpr;
 class ModExpr;

@@ -104,7 +104,7 @@ void scan_end();
 %left LEQ GEQ LT GT
 %left     PLUS MINUS
 %left     TIMES SLASH MOD
-%nonassoc LNOT NEG BNOT
+%nonassoc LNOT NEG BNOT NOT
 %nonassoc LBRACK DOT
 
 %{
@@ -181,10 +181,38 @@ Expr        : ICONST
                 { $$ = $2; }
             | Expr PLUS Expr
                 { $$ = new ast::AddExpr($1, $3, POS(@2)); }
+            | Expr TIMES Expr
+                { $$ = new ast::MulExpr($1, $3, POS(@2)); }
+            | Expr SLASH Expr
+                { $$ = new ast::DivExpr($1, $3, POS(@2)); }
+            | Expr MOD Expr
+                { $$ = new ast::ModExpr($1, $3, POS(@2)); }
             | Expr QUESTION Expr COLON Expr
                 { $$ = new ast::IfExpr($1,$3,$5,POS(@2)); }
             | MINUS Expr  %prec NEG
                 { $$ = new ast::NegExpr($2, POS(@1)); }
+            | Expr MINUS Expr 
+                { $$ = new ast::SubExpr($1, $3, POS(@2)); }
+            | LNOT Expr  %prec NOT
+                { $$ = new ast::NotExpr($2, POS(@1)); }
+            | BNOT Expr
+                { $$ = new ast::BitNotExpr($2, POS(@1)); }
+            | Expr LT Expr
+                { $$ = new ast::LesExpr($1, $3, POS(@2)); }
+            | Expr GT Expr
+                { $$ = new ast::GrtExpr($1, $3, POS(@2)); }
+            | Expr LEQ Expr
+                { $$ = new ast::LeqExpr($1, $3, POS(@2)); }
+            | Expr GEQ Expr
+                { $$ = new ast::GeqExpr($1, $3, POS(@2)); }
+            | Expr AND Expr
+                { $$ = new ast::AndExpr($1, $3, POS(@2)); }
+            | Expr OR Expr
+                { $$ = new ast::OrExpr($1, $3, POS(@2)); }
+            | Expr EQU Expr
+                { $$ = new ast::EquExpr($1, $3, POS(@2)); }
+            | Expr NEQ Expr
+                { $$ = new ast::NeqExpr($1, $3, POS(@2)); }
             ;
 
 %%
