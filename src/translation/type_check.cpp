@@ -55,6 +55,7 @@ class SemPass2 : public ast::Visitor {
     virtual void visit(ast::CompStmt *);
     virtual void visit(ast::ExprStmt *);
     virtual void visit(ast::IfStmt *);
+    virtual void visit(ast::IfExpr *);
     virtual void visit(ast::ReturnStmt *);
     virtual void visit(ast::WhileStmt *);
     // Visiting declarations
@@ -337,13 +338,34 @@ void SemPass2::visit(ast::IfStmt *s) {
     s->condition->accept(this);
     if (!s->condition->ATTR(type)->equal(BaseType::Int)) {
         issue(s->condition->getLocation(), new BadTestExprError());
-        ;
+        
     }
 
     s->true_brch->accept(this);
     s->false_brch->accept(this);
 }
 
+void SemPass2::visit(ast::IfExpr *s) {
+    s->condition->accept(this);
+    if (!s->condition->ATTR(type)->equal(BaseType::Int)) {
+        issue(s->condition->getLocation(), new BadTestExprError());
+        
+    }
+    /*if (!s->true_brch->ATTR(type)->equal(BaseType::Int)) {
+        issue(s->true_brch->getLocation(), new BadTestExprError());
+        ;
+    }
+    if (!s->false_brch->ATTR(type)->equal(BaseType::Int)) {
+        issue(s->false_brch->getLocation(), new BadTestExprError());
+        ;
+    }*/
+    s->true_brch->accept(this);
+    s->ATTR(type) = s->true_brch->ATTR(type);
+    //s->ATTR(val) = s->true_brch->ATTR(val);
+    s->false_brch->accept(this);
+    s->ATTR(type) = s->false_brch->ATTR(type);
+    //s->ATTR(val) = s->false_brch->ATTR(val);
+}
 /* Visits an ast::CompStmt node.
  *
  * PARAMETERS:

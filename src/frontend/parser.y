@@ -96,6 +96,13 @@ void scan_end();
 %nterm<mind::ast::Type*> Type
 %nterm<mind::ast::Statement*> Stmt  ReturnStmt ExprStmt IfStmt  CompStmt WhileStmt 
 %nterm<mind::ast::Expr*> Expr
+%nterm<mind::ast::LvalueExpr*> LvalueExpr
+%nterm<mind::ast::VarDecl*> VarDecl
+%nterm<mind::ast::VarRef*> VarRef
+%nterm<mind::ast::AssignExpr*> AssignExpr
+//%nterm<mind::ast::IfExpr*> IfExpr
+%nterm<mind::ast::Lvalue*> Lvalue
+%token <std::string> Str
 /*   SUBSECTION 2.2: associativeness & precedences */
 %nonassoc QUESTION
 %left     OR
@@ -140,6 +147,7 @@ FormalList :  /* EMPTY */
 
 Type        : INT
                 { $$ = new ast::IntType(POS(@1)); }
+            
 StmtList    : /* empty */
                 { $$ = new ast::StmtList(); }
             | StmtList Stmt
@@ -147,7 +155,39 @@ StmtList    : /* empty */
                   $$ = $1; }
             ;
 
-Stmt        : ReturnStmt {$$ = $1;}|
+VarRef      :
+
+                IDENTIFIER
+                {$$ = new ast::VarRef($1, POS(@1));};
+
+VarDecl     :
+                Type IDENTIFIER
+                { $$ = new ast::VarDecl($2, $1, POS(@1)); }
+            |
+                Type IDENTIFIER ASSIGN Expr
+                { $$ = new ast::VarDecl($2, $1, $4, POS(@3)); 
+                  //$$ = new ast::AssignExpr($2,$4,POS(@3));
+                }
+            //|
+              //  Type IDENTIFIER ASSIGN ICONST
+                //{ $$ = new ast::VarDecl($2, $1, $4, POS(@3)); }
+            ;
+
+Lvalue : IDENTIFIER
+                {$$ = new ast::VarRef($1, POS(@1));};
+
+LvalueExpr  :
+                Lvalue
+                {$$ = new ast::LvalueExpr($1, POS(@1));};
+
+AssignExpr  :
+                Lvalue ASSIGN Expr
+                { $$ = new ast::AssignExpr($1, $3, POS(@2)); }
+            ;
+
+Stmt        : 
+              VarDecl {$$ = $1;}|
+              ReturnStmt {$$ = $1;}|
               ExprStmt   {$$ = $1;}|
               IfStmt     {$$ = $1;}|
               WhileStmt  {$$ = $1;}|
@@ -158,7 +198,7 @@ Stmt        : ReturnStmt {$$ = $1;}|
                 {$$ = new ast::EmptyStmt(POS(@1));}
             ;
 CompStmt    : LBRACE StmtList RBRACE
-                {$$ = new ast::CompStmt($2,POS(@1));}
+                {$$ = new ast::CompStmt($2,POS(@1));} 
             ;
 WhileStmt   : WHILE LPAREN Expr RPAREN Stmt
                 { $$ = new ast::WhileStmt($3, $5, POS(@1)); }
@@ -169,16 +209,31 @@ IfStmt      : IF LPAREN Expr RPAREN Stmt
                 { $$ = new ast::IfStmt($3, $5, $7, POS(@1)); }
             ;
 
+//IfExpr      : Expr QUESTION Expr COLON Expr
+  //              { $$ = new ast::IfExpr($1, $3, $5, POS(@2)); }
+    //        ;
+
 ReturnStmt  : RETURN Expr SEMICOLON
                 { $$ = new ast::ReturnStmt($2, POS(@1)); }
+                
             ;
+//ReturnStmt  : RETURN Lvalue SEMICOLON
+  //              { $$ = new ast::ReturnStmt($2, POS(@1)); }
+    //        ;
 ExprStmt    : Expr SEMICOLON
                 { $$ = new ast::ExprStmt($1, POS(@1)); } 
+                
             ;         
 Expr        : ICONST
                 { $$ = new ast::IntConst($1, POS(@1)); }            
             | LPAREN Expr RPAREN
                 { $$ = $2; }
+            | LvalueExpr
+                {$$ = $1; }
+            //| IfExpr
+              //  {$$ = $1; }
+            | AssignExpr
+                { $$ = $1; }
             | Expr PLUS Expr
                 { $$ = new ast::AddExpr($1, $3, POS(@2)); }
             | Expr TIMES Expr
@@ -213,7 +268,11 @@ Expr        : ICONST
                 { $$ = new ast::EquExpr($1, $3, POS(@2)); }
             | Expr NEQ Expr
                 { $$ = new ast::NeqExpr($1, $3, POS(@2)); }
+           
             ;
+//            ;
+
+               
 
 %%
 
@@ -266,7 +325,7 @@ mind::MindCompiler::parseFile(const char* filename) {
 void
 yy::parser::error (const location_type& l, const std::string& m)
 {
-  //std::cerr << l << ": " << m << '\n';
+  std::cerr << l << ": " << m << '\n';
   err::issue(new Location(l.begin.line, l.begin.column), new err::SyntaxError(m));
   
   scan_end();

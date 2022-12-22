@@ -35,6 +35,7 @@ class SemPass1 : public ast::Visitor {
     virtual void visit(ast::FuncDefn *);
     virtual void visit(ast::Program *);
     virtual void visit(ast::IfStmt *);
+    virtual void visit(ast::IfExpr *);
     virtual void visit(ast::WhileStmt *);
     virtual void visit(ast::CompStmt *);
     virtual void visit(ast::VarDecl *);
@@ -124,6 +125,11 @@ void SemPass1::visit(ast::IfStmt *s) {
     s->false_brch->accept(this);
 }
 
+void SemPass1::visit(ast::IfExpr *s) {
+    s->condition->accept(this);
+    s->true_brch->accept(this);
+    s->false_brch->accept(this);
+}
 /* Visits an ast::WhileStmt node.
  *
  * PARAMETERS:
@@ -159,11 +165,6 @@ void SemPass1::visit(ast::CompStmt *c) {
  *   vdecl - the ast::VarDecl node to visit
  */
 void SemPass1::visit(ast::VarDecl *vdecl) {
-    Type *t = NULL;
-
-    vdecl->type->accept(this);
-    t = vdecl->type->ATTR(type);
-
     // TODO: Add a new symbol to a scope
     // 1. Create a new `Variable` symbol
     // 2. Check for conflict in `scopes`, which is a global variable refering to
@@ -171,6 +172,18 @@ void SemPass1::visit(ast::VarDecl *vdecl) {
     // 3. Declare the symbol in `scopes`
     // 4. Special processing for global variables
     // 5. Tag the symbol to `vdecl->ATTR(sym)`
+    Type *t = NULL;
+    vdecl->type->accept(this);
+    Symbol *sym = scopes->lookup(vdecl->name, vdecl->getLocation(), false);
+
+    if (NULL != sym)
+        issue(vdecl->getLocation(), new DeclConflictError(vdecl->name, sym));
+    else{
+        t = vdecl->type->ATTR(type);
+        Variable *s = new Variable(vdecl->name, t, vdecl->getLocation());
+        scopes->declare(s);
+        vdecl->ATTR(sym) = s;
+    }
 }
 
 /* Visiting an ast::IntType node.

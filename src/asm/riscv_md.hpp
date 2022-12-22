@@ -84,6 +84,7 @@ struct RiscvInstr : public Instr {
         // assembler directives
         COMMENT,
         // instructions/pseudo instructions
+        ASSIGN,
         ADD,
         MUL,
         SUB,

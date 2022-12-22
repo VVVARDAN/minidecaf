@@ -651,7 +651,7 @@ void Tac::dump(std::ostream &os) {
         break;
 
     case ASSIGN:
-        os << "    " << op0.var << " <- " << op1.var;
+        os << "         " << op0.var << " <- " << op1.var;
         break;
 
     case ADD:

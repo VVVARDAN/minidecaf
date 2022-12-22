@@ -147,8 +147,8 @@ class Lvalue : public ASTNode {
         SIMPLE_VAR, // referencing simple variable
         ARRAY_ELE   // referencing array element
     } ATTR(lv_kind);
-
     type::Type *ATTR(type); // for semantic analysis
+    tac::Temp ATTR(val);
 };
 
 /* Node representing a program.
@@ -415,6 +415,7 @@ class PointerRef : public Lvalue {
 class LvalueExpr : public Expr {
   public:
     LvalueExpr(Lvalue *lv, Location *l);
+    //LvalueExpr();
     //   LvalueExpr (Lvalue* lv, Expr* rv,
     // 			  Location* l);
 

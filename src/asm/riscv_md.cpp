@@ -288,6 +288,10 @@ void RiscvDesc::emitTac(Tac *t) {
         emitBinaryTac(RiscvInstr::NEQ,t);
         break;
 
+    case Tac::ASSIGN:
+        emitUnaryTac(RiscvInstr::ASSIGN,t);
+        break;
+
     default:
         mind_assert(false); // should not appear inside a basic block
     }
@@ -630,6 +634,10 @@ void RiscvDesc::emitInstr(RiscvInstr *i) {
         oss << "and " << i->r0->name << ", " << i->r0->name << ", " << i->r1->name;
         oss << std::endl;
         oss << "seqz " << i->r0->name<< ", "<<i->r0->name;
+        break;
+
+    case RiscvInstr::ASSIGN:
+        oss<<"mv"<<i->r0->name<<", "<<i->r1->name;
         break;
 
     case RiscvInstr::BEQZ:
