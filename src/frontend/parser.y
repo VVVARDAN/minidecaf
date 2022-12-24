@@ -98,6 +98,7 @@ void scan_end();
 %nterm<mind::ast::Expr*> Expr
 %nterm<mind::ast::LvalueExpr*> LvalueExpr
 %nterm<mind::ast::VarDecl*> VarDecl
+//%nterm<mind::ast::ASTNode*> ASTNode
 %nterm<mind::ast::VarRef*> VarRef
 %nterm<mind::ast::AssignExpr*> AssignExpr
 //%nterm<mind::ast::IfExpr*> IfExpr
@@ -135,6 +136,8 @@ FoDList :
                  {$1->func_and_globals->append($2);
                   $$ = $1; }
                 }
+            //| 
+            //VarDecl {$$ = $1;}
 
 FuncDefn : Type IDENTIFIER LPAREN FormalList RPAREN LBRACE StmtList RBRACE {
               $$ = new ast::FuncDefn($2,$1,$4,$7,POS(@1));
@@ -151,6 +154,9 @@ Type        : INT
 StmtList    : /* empty */
                 { $$ = new ast::StmtList(); }
             | StmtList Stmt
+                { $1->append($2);
+                  $$ = $1; }
+            | StmtList VarDecl
                 { $1->append($2);
                   $$ = $1; }
             ;
@@ -173,6 +179,11 @@ VarDecl     :
                 //{ $$ = new ast::VarDecl($2, $1, $4, POS(@3)); }
             ;
 
+
+                
+
+//VarDecl     :    VarDecl {$$ = $1;}|
+
 Lvalue : IDENTIFIER
                 {$$ = new ast::VarRef($1, POS(@1));};
 
@@ -186,9 +197,9 @@ AssignExpr  :
             ;
 
 Stmt        : 
-              VarDecl {$$ = $1;}|
               ReturnStmt {$$ = $1;}|
               ExprStmt   {$$ = $1;}|
+              //VarDecl {$$ = $1;}|
               IfStmt     {$$ = $1;}|
               WhileStmt  {$$ = $1;}|
               CompStmt   {$$ = $1;}|
