@@ -37,8 +37,11 @@ class SemPass1 : public ast::Visitor {
     virtual void visit(ast::IfStmt *);
     virtual void visit(ast::IfExpr *);
     virtual void visit(ast::WhileStmt *);
+    virtual void visit(ast::DoWhileStmt *);
+    virtual void visit(ast::ForStmt *);
     virtual void visit(ast::CompStmt *);
     virtual void visit(ast::VarDecl *);
+    virtual void visit(ast::EmptyStmt *);
     // visiting types
     virtual void visit(ast::IntType *);
 };
@@ -135,11 +138,36 @@ void SemPass1::visit(ast::IfExpr *s) {
  * PARAMETERS:
  *   e     - the ast::WhileStmt node
  */
+void SemPass1::visit(ast::EmptyStmt *s) {
+    return;
+}
 void SemPass1::visit(ast::WhileStmt *s) {
     s->condition->accept(this);
     s->loop_body->accept(this);
 }
+void SemPass1::visit(ast::DoWhileStmt *s) {
+    s->loop_body->accept(this);
+    s->condition->accept(this);
+}
+void SemPass1::visit(ast::ForStmt *s) {
+    Scope *scope = new LocalScope();
+    s->ATTR(scope) = scope;
+    scopes->open(scope);
 
+    if(s->vardecl)
+        s->vardecl->accept(this);
+    if(s->expr1)
+        s->expr1->accept(this);
+    if(s->expr2)
+        s->expr2->accept(this);
+    if(s->expr3)
+        s->expr3->accept(this);
+    if(s->loop_body)
+        s->loop_body->accept(this);
+    
+    scopes->close();
+
+}
 /* Visiting an ast::CompStmt node.
  */
 void SemPass1::visit(ast::CompStmt *c) {

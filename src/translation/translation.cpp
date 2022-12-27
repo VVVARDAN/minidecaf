@@ -103,6 +103,7 @@ void Translation::visit(ast::AssignExpr *s) {
 /* Translating an ast::ExprStmt node.
  */
 void Translation::visit(ast::ExprStmt *s) { s->e->accept(this); }
+void Translation::visit(ast::EmptyStmt *s) { return; }
 
 /* Translating an ast::IfStmt node.
  *
@@ -164,6 +165,29 @@ void Translation::visit(ast::WhileStmt *s) {
 
     Label old_break = current_break_label;
     current_break_label = L2;
+    Label old_continue = current_continue_label;
+    current_continue_label = L1;
+    tr->genMarkLabel(L1);
+    s->condition->accept(this);
+    tr->genJumpOnZero(L2, s->condition->ATTR(val));
+
+    s->loop_body->accept(this);
+    tr->genJump(L1);
+
+    tr->genMarkLabel(L2);
+
+    current_break_label = old_break;
+    current_continue_label = old_continue;
+}
+
+void Translation::visit(ast::DoWhileStmt *s) {
+    Label L1 = tr->getNewLabel();
+    Label L2 = tr->getNewLabel();
+
+    Label old_break = current_break_label;
+    current_break_label = L2;
+    Label old_continue = current_continue_label;
+    current_continue_label = L1;
 
     tr->genMarkLabel(L1);
     s->condition->accept(this);
@@ -175,11 +199,61 @@ void Translation::visit(ast::WhileStmt *s) {
     tr->genMarkLabel(L2);
 
     current_break_label = old_break;
+    current_continue_label = old_continue;
+}
+
+void Translation::visit(ast::ForStmt *s) {
+    //scopes->open(s->ATTR(scope));
+    //Label Ld = tr->getNewLabel();
+    Label L1 = tr->getNewLabel();
+    Label L2 = tr->getNewLabel();
+    Label L3 = tr->getNewLabel();
+    //tr->genMarkLabel(L1);
+    if(s->vardecl){
+        //tr->genMarkLabel()
+        s->vardecl->accept(this);
+        /*s->vardecl->ATTR(sym)->attachTemp(tr->getNewTempI4());
+        if(s->vardecl->init){
+            s->vardecl->init->accept(this);
+            tr->genAssign(s->vardecl->ATTR(sym)->getTemp(), s->vardecl->init->ATTR(val));
+        }*/
+    }
+    if(s->expr1) {
+        s->expr1->accept(this);
+    }
+    //tr->genJump(L1);
+
+    Label old_break = current_break_label;
+    current_break_label = L2;
+    Label old_continue = current_continue_label;
+    current_continue_label = L3;
+
+    tr->genMarkLabel(L1);
+    if(s->expr2){
+        s->expr2->accept(this);
+        tr->genJumpOnZero(L2, s->expr2->ATTR(val));
+    }
+    
+    if(s->loop_body)
+        s->loop_body->accept(this);
+    
+    
+    tr->genMarkLabel(L3);
+    if(s->expr3)
+        s->expr3->accept(this);
+    tr->genJump(L1);
+    
+    tr->genMarkLabel(L2);
+
+    current_break_label = old_break;
+    current_continue_label = old_continue;
+    //scopes->close()
 }
 
 /* Translating an ast::BreakStmt node.
  */
 void Translation::visit(ast::BreakStmt *s) { tr->genJump(current_break_label); }
+void Translation::visit(ast::ContStmt *s) { tr->genJump(current_continue_label); }
 
 /* Translating an ast::CompStmt node.
  */

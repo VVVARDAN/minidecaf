@@ -66,6 +66,9 @@ class ASTNode {
         VAR_REF,
         WHILE_STMT,
         FOD,
+        Do_While_Stmt,
+        For_Stmt,
+        CONT_STMT,
     } NodeType;
 
   protected:
@@ -303,6 +306,36 @@ class WhileStmt : public Statement {
   public:
     Expr *condition;
     Statement *loop_body;
+};
+
+class DoWhileStmt : public Statement {
+  public:
+    DoWhileStmt(Expr *cond, Statement *loop_body, Location *l);
+
+    virtual void accept(Visitor *);
+    virtual void dumpTo(std::ostream &);
+
+  public:
+    Expr *condition;
+    Statement *loop_body;
+};
+
+class ForStmt : public Statement {
+  public:
+    ForStmt(VarDecl *vardecl_, Expr *expr2_, Expr *expr3_, Statement *loop_body, Location *l);
+    ForStmt(Expr *expr1_, Expr *expr2_, Expr *expr3_, Statement *body, Location *l);
+    ForStmt(Statement *body, Location *l);
+    virtual void accept(Visitor *);
+    virtual void dumpTo(std::ostream &);
+
+  public:
+    VarDecl *vardecl;
+    Expr *expr1;
+    Expr *expr2;
+    Expr *expr3;
+    Statement *loop_body;
+    
+    scope::Scope *ATTR(scope);
 };
 /* Node representing an comp statement.
  *
